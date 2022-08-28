@@ -5,7 +5,7 @@
     android:id="@+id/tvName"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="start|center_vertical"
+    android:layout_gravity="center"
     android:background="@drawable/button_dialog_main"
     android:clickable="true"
     android:focusable="true"
