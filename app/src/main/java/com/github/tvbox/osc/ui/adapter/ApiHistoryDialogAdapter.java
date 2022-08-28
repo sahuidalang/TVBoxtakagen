@@ -77,7 +77,9 @@ public class ApiHistoryDialogAdapter extends ListAdapter<String, ApiHistoryDialo
         String value = data.get(position);
         String name = value;
         if (select.equals(value))
-            name = "√ " + name;
+            name = "★ " + name;
+        else
+            name = "☆ " + name;
         ((TextView) holder.itemView.findViewById(R.id.tvName)).setText(name);
         holder.itemView.findViewById(R.id.tvName).setOnClickListener(new View.OnClickListener() {
             @Override
