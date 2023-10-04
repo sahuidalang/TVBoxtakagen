@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -31,6 +32,22 @@ import xyz.doikki.videoplayer.exo.ExoMediaSourceHelper;
 
 public class OkGoHelper {
     public static final long DEFAULT_MILLISECONDS = 10000;      //默认的超时时间
+
+    //https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200
+    public static HashMap<Integer, String > httpPhaseMap  = new HashMap<Integer, String>(){{
+        put(200,"OK");
+        put(301,"Moved Permanently");
+        put(302,"Found");
+        put(400,"Bad Request");
+        put(401,"Unauthorized");
+        put(403,"Forbidden");
+        put(404,"Not Found");
+        put(429,"Too Many Requests");
+        put(500,"Internal Server Error");
+        put(502,"Bad Gateway");
+        put(503,"Service Unavailable");
+        put(504,"Gateway Timeout");
+    }};
 
     static void initExoOkHttpClient() {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -122,6 +139,8 @@ public class OkGoHelper {
     static OkHttpClient defaultClient = null;
     static OkHttpClient noRedirectClient = null;
 
+    static OkHttpClient cacheClient = null;
+
     public static OkHttpClient getDefaultClient() {
         return defaultClient;
     }
@@ -158,7 +177,6 @@ public class OkGoHelper {
         }
 
         HttpHeaders.setUserAgent(Version.userAgent());
-
         OkHttpClient okHttpClient = builder.build();
         OkGo.getInstance().setOkHttpClient(okHttpClient);
 
@@ -168,13 +186,17 @@ public class OkGoHelper {
         builder.followSslRedirects(false);
         noRedirectClient = builder.build();
 
+
+        builder.cache(new okhttp3.Cache(new File(FileUtils.getCachePath() + "/pic/"), 100 * 1024 * 1024)); // 缓存 100 MB
+        cacheClient = builder.followRedirects(true).followSslRedirects(true).build();
+
         initExoOkHttpClient();
-        initPicasso(okHttpClient);
+        initPicasso(cacheClient);
     }
 
     static void initPicasso(OkHttpClient client) {
 //        OkHttp3Downloader downloader = new OkHttp3Downloader(client);
-        CustomImageDownloader downloader = new CustomImageDownloader();
+        CustomImageDownloader downloader = new CustomImageDownloader(client);
         Picasso picasso = new Picasso.Builder(App.getInstance()).downloader(downloader).build();
         Picasso.setSingletonInstance(picasso);
     }
